@@ -1,4 +1,4 @@
-use crate::maps::{Lookup, Map, SortedMap};
+use crate::maps::{DoubleEndedMap, Lookup, Map, SortedMap};
 use std::borrow::Borrow;
 use std::mem::replace;
 use std::ops::RangeBounds;
@@ -377,6 +377,60 @@ where
         R: RangeBounds<Q>,
     {
         self.map.range(range)
+    }
+
+    /// Returns the first value in the multi-set, or `None` if the multi-set is empty.
+    pub fn first(&self) -> Option<&M::Key>
+    where
+        M: DoubleEndedMap,
+        M::Key: Ord,
+    {
+        self.map.first().map(|(k, _)| k)
+    }
+
+    /// Returns the last value in the multi-set, or `None` if the multi-set is empty.
+    pub fn last(&self) -> Option<&M::Key>
+    where
+        M: DoubleEndedMap,
+        M::Key: Ord,
+    {
+        self.map.last().map(|(k, _)| k)
+    }
+
+    /// Removes the first value in the multi-set and returns it, or `None` if the multi-set is empty.
+    pub fn pop_first(&mut self) -> Option<M::Key>
+    where
+        M: DoubleEndedMap,
+        M::Key: Ord + Clone,
+    {
+        if let Some((value, count)) = self.map.pop_first() {
+            if count > 1 {
+                self.length += count - 1;
+                self.map.insert(value.clone(), count - 1);
+            }
+            self.length -= 1;
+            Some(value)
+        } else {
+            None
+        }
+    }
+
+    /// Removes the last value in the multi-set and returns it, or `None` if the multi-set is empty.
+    pub fn pop_last(&mut self) -> Option<M::Key>
+    where
+        M: DoubleEndedMap,
+        M::Key: Ord + Clone,
+    {
+        if let Some((value, count)) = self.map.pop_last() {
+            if count > 1 {
+                self.length += count - 1;
+                self.map.insert(value.clone(), count - 1);
+            }
+            self.length -= 1;
+            Some(value)
+        } else {
+            None
+        }
     }
 }
 

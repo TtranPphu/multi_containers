@@ -266,3 +266,42 @@ where
         self.remove(key)
     }
 }
+
+/// A trait allow for double-ended access to a map.
+pub trait DoubleEndedMap: Map
+where
+    Self::Key: Ord,
+{
+    /// Return a reference to the first key-value pair in the map.
+    fn first(&self) -> Option<(&Self::Key, &Self::Val)>;
+
+    /// Return a reference to the last key-value pair in the map.
+    fn last(&self) -> Option<(&Self::Key, &Self::Val)>;
+
+    /// Remove and return the first key-value pair in the map.
+    fn pop_first(&mut self) -> Option<(Self::Key, Self::Val)>;
+
+    /// Remove and return the last key-value pair in the map.
+    fn pop_last(&mut self) -> Option<(Self::Key, Self::Val)>;
+}
+
+impl<K, V> DoubleEndedMap for BTreeMap<K, V>
+where
+    K: Ord,
+{
+    fn first(&self) -> Option<(&K, &V)> {
+        self.first_key_value()
+    }
+
+    fn last(&self) -> Option<(&K, &V)> {
+        self.last_key_value()
+    }
+
+    fn pop_first(&mut self) -> Option<(K, V)> {
+        self.pop_first().map(|(k, v)| (k, v))
+    }
+
+    fn pop_last(&mut self) -> Option<(K, V)> {
+        self.pop_last().map(|(k, v)| (k, v))
+    }
+}
